@@ -22,16 +22,26 @@ public class CategoryController : ControllerBase {
     [HttpPost]
     [Route ("")]
     public async Task<ActionResult<Category>> Create ([FromBody] Category model) {
+        if (!ModelState.IsValid) {
+            return BadRequest (ModelState);
+        }
         return Ok (model);
     }
 
     [HttpPut]
     [Route ("{id:int}")]
     public async Task<ActionResult<Category>> Update (int id, [FromBody] Category model) {
-        if (model.Id == id)
-            return Ok (model);
+        // Check if sending ID is equal the model
+        if (id != model.Id) {
+            return NotFound (new { message = "Categoria não encontrada" });
+        }
 
-        return NotFound ();
+        // Check if valid data
+        if (!ModelState.IsValid) {
+            return BadRequest (ModelState);
+        }
+
+        return Ok (model);
     }
 
     [HttpDelete]
