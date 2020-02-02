@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Shop.Data;
 
 namespace Shop {
     public class Startup {
@@ -15,6 +17,9 @@ namespace Shop {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices (IServiceCollection services) {
             services.AddControllers ();
+            services.AddDbContext<DataContext> (opt => opt.UseInMemoryDatabase ("Database"));
+            // Open and Close Connection with database
+            services.AddScoped<DataContext, DataContext> ();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
