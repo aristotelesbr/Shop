@@ -18,6 +18,7 @@ namespace Shop.Controllers
     [HttpGet]
     [Route("")]
     [Authorize(Roles = "employee")]
+    [ResponseCache(VaryByHeader = "User-Agent", Location = ResponseCacheLocation.Any, Duration = 30)]
     public async Task<ActionResult> List([FromServices] DataContext context)
     {
       List<User> users = await context.Users

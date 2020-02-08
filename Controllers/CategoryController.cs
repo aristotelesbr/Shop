@@ -14,7 +14,8 @@ public class CategoryController : ControllerBase
   // /categories
   [HttpGet]
   [Route("")]
-  [Authorize(Roles = "employee")]
+  [AllowAnonymous]
+  [ResponseCache(VaryByHeader = "User-Agent", Location = ResponseCacheLocation.Any, Duration = 30)]
   public async Task<ActionResult<List<Category>>> List([FromServices] DataContext context)
   {
     var categories = await context.Categories.AsNoTracking().ToListAsync();
