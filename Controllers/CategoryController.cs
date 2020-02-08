@@ -8,7 +8,7 @@ using Shop.Data;
 using Shop.Models;
 
 // /categories
-[Route("Categories")]
+[Route("v1/categories")]
 public class CategoryController : ControllerBase
 {
   // /categories
