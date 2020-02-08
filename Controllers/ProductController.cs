@@ -13,9 +13,10 @@ namespace Shop.Controllers
   {
     [HttpGet]
     [Route("")]
-    public async Task<ActionResult<List<Product>>> List([FromServices] DataContext context)
+    [Authorize(Roles = "employee")]
+    public async Task<ActionResult> List([FromServices] DataContext context)
     {
-      var products = await context
+      List<Product> products = await context
           .Products
           .Include(x => x.Category)
           .AsNoTracking()
@@ -26,6 +27,7 @@ namespace Shop.Controllers
 
     [HttpGet]
     [Route("categories/{id:int}")]
+    [Authorize(Roles = "employee")]
     public async Task<ActionResult<Product>> Show(int id, [FromServices] DataContext context)
     {
       var category = await context
@@ -40,6 +42,7 @@ namespace Shop.Controllers
 
     [HttpPost]
     [Route("")]
+    [Authorize(Roles = "employee")]
     public async Task<ActionResult<Product>> Create(
         [FromBody] Product model, [FromServices] DataContext context)
     {
