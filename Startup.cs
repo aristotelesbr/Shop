@@ -9,80 +9,88 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Shop.Data;
 
-namespace Shop
-{
-  public class Startup
-  {
-    public Startup(IConfiguration configuration)
-    {
+namespace Shop {
+  public class Startup {
+    public Startup (IConfiguration configuration) {
       Configuration = configuration;
     }
 
     public IConfiguration Configuration { get; }
 
     // This method gets called by the runtime. Use this method to add services to the container.
-    public void ConfigureServices(IServiceCollection services)
-    {
-      services.AddResponseCompression(option =>
-        {
-          option.Providers.Add<GzipCompressionProvider>();
-          option.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-            new[] { "application/json" }
-          );
-        }
-      );
+    public void ConfigureServices (IServiceCollection services) {
+      services.AddCors ();
+      services.AddResponseCompression (option => {
+        option.Providers.Add<GzipCompressionProvider> ();
+        option.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat (
+          new [] { "application/json" }
+        );
+      });
 
       // This method add caching all routes.
       // services.AddResponseCaching();
 
-      services.AddControllers();
+      services.AddControllers ();
 
-      var key = Encoding.ASCII.GetBytes(Settings.Secret);
-      services.AddAuthentication(x =>
-      {
+      var key = Encoding.ASCII.GetBytes (Settings.Secret);
+      services.AddAuthentication (x => {
         x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-      }).AddJwtBearer(x =>
-      {
+      }).AddJwtBearer (x => {
         x.RequireHttpsMetadata = false;
         x.SaveToken = true;
-        x.TokenValidationParameters = new TokenValidationParameters
-        {
+        x.TokenValidationParameters = new TokenValidationParameters {
           ValidateIssuerSigningKey = true,
-          IssuerSigningKey = new SymmetricSecurityKey(key),
+          IssuerSigningKey = new SymmetricSecurityKey (key),
           ValidateIssuer = false,
           ValidateAudience = false
         };
       });
 
       // services.AddDbContext<DataContext> (opt => opt.UseInMemoryDatabase ("Database"));
-      services.AddDbContext<DataContext>(
-          opt => opt.UseSqlServer(Configuration.GetConnectionString("connectionString"))
+      services.AddDbContext<DataContext> (
+        opt => opt.UseSqlServer (Configuration.GetConnectionString ("connectionString"))
       );
       // Open and Close Connection with database
-      services.AddScoped<DataContext, DataContext>();
+      services.AddScoped<DataContext, DataContext> ();
+
+      services.AddSwaggerGen (suagger => {
+        suagger.SwaggerDoc ("v1", new OpenApiInfo {
+          Title = " Shop API",
+            Version = "v1"
+        });
+      });
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-    {
-      if (env.IsDevelopment())
-      {
-        app.UseDeveloperExceptionPage();
+    public void Configure (IApplicationBuilder app, IWebHostEnvironment env) {
+      if (env.IsDevelopment ()) {
+        app.UseDeveloperExceptionPage ();
       }
 
-      app.UseHttpsRedirection();
+      app.UseHttpsRedirection ();
 
-      app.UseRouting();
+      app.UseSwagger ();
+      app.UseSwaggerUI (swagger => {
+        swagger.SwaggerEndpoint ("/swagger/v1/swagger.json", "Shop API V1");
+      });
 
-      app.UseAuthentication();
-      app.UseAuthorization();
+      app.UseRouting ();
 
-      app.UseEndpoints(endpoints =>
-      {
-        endpoints.MapControllers();
+      app.UseCors (c => c
+        .AllowAnyOrigin ()
+        .AllowAnyMethod ()
+        .AllowAnyHeader ()
+      );
+
+      app.UseAuthentication ();
+      app.UseAuthorization ();
+
+      app.UseEndpoints (endpoints => {
+        endpoints.MapControllers ();
       });
     }
   }
